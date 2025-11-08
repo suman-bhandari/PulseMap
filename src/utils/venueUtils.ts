@@ -56,6 +56,20 @@ export function formatWaitTime(minutes: number): string {
   return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
 }
 
+export function formatWaitTimeInterval(interval: [number, number]): string {
+  const [min, max] = interval;
+  if (min === 0 && max === 0) return 'No wait';
+  if (max < 60) return `${min}-${max} min`;
+  const minHours = Math.floor(min / 60);
+  const minMins = min % 60;
+  const maxHours = Math.floor(max / 60);
+  const maxMins = max % 60;
+  if (minHours === maxHours) {
+    return `${minHours}h ${minMins}-${maxMins}m`;
+  }
+  return `${formatWaitTime(min)} - ${formatWaitTime(max)}`;
+}
+
 export function filterVenuesByCategory(
   venues: Venue[],
   category: Venue['category'] | 'all'

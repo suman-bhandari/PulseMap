@@ -23,16 +23,39 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  // Load user from localStorage on mount
+  const createDefaultUser = () => {
+    const defaultUser: User = {
+      id: 'user_default',
+      email: 'user@example.com',
+      name: 'Alex',
+      trustability: 78,
+      reputation: 1245, // karma/reputation score
+      totalReviews: 23,
+      createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // 90 days ago
+    };
+    localStorage.setItem('venueTracker_user', JSON.stringify(defaultUser));
+    setUser(defaultUser);
+  };
+
+  // Load user from localStorage on mount, or create default user
   useEffect(() => {
     const savedUser = localStorage.getItem('venueTracker_user');
     if (savedUser) {
       try {
         const parsed = JSON.parse(savedUser);
-        setUser({ ...parsed, createdAt: new Date(parsed.createdAt) });
+        setUser({ 
+          ...parsed, 
+          createdAt: new Date(parsed.createdAt),
+          reputation: parsed.reputation || 0, // Ensure reputation exists
+        });
       } catch (e) {
         console.error('Error loading user from localStorage:', e);
+        // Create default user if loading fails
+        createDefaultUser();
       }
+    } else {
+      // Create default signed-in user
+      createDefaultUser();
     }
   }, []);
 
@@ -56,6 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       email,
       name,
       trustability: 0,
+      reputation: 0,
       totalReviews: 0,
       createdAt: new Date(),
     };

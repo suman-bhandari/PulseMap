@@ -18,9 +18,15 @@ const AccountButton: React.FC = () => {
             <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
               {user.name.charAt(0).toUpperCase()}
             </div>
-            <span className="hidden sm:block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {user.name}
-            </span>
+            <div className="hidden sm:block">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 block">
+                {user.name}
+              </span>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-gray-600 dark:text-gray-400">Score: {user.trustability}</span>
+                <span className="text-yellow-600 dark:text-yellow-400">⭐ {user.reputation || 0}</span>
+              </div>
+            </div>
           </>
         ) : (
           <>

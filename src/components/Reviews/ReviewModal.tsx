@@ -73,13 +73,17 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ venue, isOpen, onClose, onRev
         setHasUsedAllowOnce(true);
       }
 
+      // Calculate activity quotient (based on time spent and frequency)
+      const activityQuotient = Math.min(100, Math.floor((timeSpent / 60) * 10 + user.totalReviews * 2));
+
       // Create review
       const review: Omit<Review, 'id' | 'createdAt'> = {
         venueId: venue.id,
         userId: user.id,
-        userName: user.name,
+        userName: user.name, // In production, this would be anonymized/hashed
         userAvatarUrl: user.avatarUrl,
         userTrustability: user.trustability,
+        activityQuotient,
         rating,
         comment,
         lastVisitDate: new Date(),

@@ -8,6 +8,14 @@ function getActivityLevel(capacity: number, waitTime: number): ActivityLevel {
   return 'available';
 }
 
+// Helper function to create wait time interval (85% confidence, ~5 min range)
+function getWaitTimeInterval(baseWaitTime: number): [number, number] {
+  const range = 5; // ~5 minutes range
+  const min = Math.max(0, Math.floor(baseWaitTime - range / 2));
+  const max = Math.ceil(baseWaitTime + range / 2);
+  return [min, max];
+}
+
 export const mockVenues: Venue[] = [
   // Bars & Clubs
   {
@@ -19,7 +27,10 @@ export const mockVenues: Venue[] = [
     longitude: -122.4368,
     capacity: 95,
     waitTime: 75,
+    waitTimeInterval: getWaitTimeInterval(75),
     activityLevel: getActivityLevel(95, 75),
+    vibe: 8,
+    crowd: 9,
   },
   {
     id: '2',
@@ -30,7 +41,10 @@ export const mockVenues: Venue[] = [
     longitude: -122.4144,
     capacity: 45,
     waitTime: 20,
+    waitTimeInterval: getWaitTimeInterval(20),
     activityLevel: getActivityLevel(45, 20),
+    vibe: 6,
+    crowd: 5,
   },
   {
     id: '3',
@@ -41,7 +55,10 @@ export const mockVenues: Venue[] = [
     longitude: -122.4094,
     capacity: 88,
     waitTime: 50,
+    waitTimeInterval: getWaitTimeInterval(50),
     activityLevel: getActivityLevel(88, 50),
+    vibe: 9,
+    crowd: 8,
   },
   {
     id: '4',
@@ -52,7 +69,10 @@ export const mockVenues: Venue[] = [
     longitude: -122.4228,
     capacity: 70,
     waitTime: 35,
+    waitTimeInterval: getWaitTimeInterval(35),
     activityLevel: getActivityLevel(70, 35),
+    vibe: 7,
+    crowd: 7,
   },
   {
     id: '5',
@@ -63,6 +83,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4077,
     capacity: 25,
     waitTime: 5,
+    waitTimeInterval: getWaitTimeInterval(5),
     activityLevel: getActivityLevel(25, 5),
   },
   
@@ -76,6 +97,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4328,
     capacity: 92,
     waitTime: 90,
+    waitTimeInterval: getWaitTimeInterval(90),
     activityLevel: getActivityLevel(92, 90),
   },
   {
@@ -87,6 +109,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4106,
     capacity: 55,
     waitTime: 25,
+    waitTimeInterval: getWaitTimeInterval(25),
     activityLevel: getActivityLevel(55, 25),
   },
   {
@@ -98,6 +121,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4194,
     capacity: 38,
     waitTime: 12,
+    waitTimeInterval: getWaitTimeInterval(12),
     activityLevel: getActivityLevel(38, 12),
   },
   {
@@ -109,6 +133,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4194,
     capacity: 82,
     waitTime: 55,
+    waitTimeInterval: getWaitTimeInterval(55),
     activityLevel: getActivityLevel(82, 55),
   },
   {
@@ -120,6 +145,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4075,
     capacity: 15,
     waitTime: 0,
+    waitTimeInterval: getWaitTimeInterval(0),
     activityLevel: getActivityLevel(15, 0),
   },
   {
@@ -131,6 +157,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4208,
     capacity: 98,
     waitTime: 120,
+    waitTimeInterval: getWaitTimeInterval(120),
     activityLevel: getActivityLevel(98, 120),
   },
   
@@ -144,6 +171,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4331,
     capacity: 65,
     waitTime: 40,
+    waitTimeInterval: getWaitTimeInterval(40),
     activityLevel: getActivityLevel(65, 40),
   },
   {
@@ -155,6 +183,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4303,
     capacity: 42,
     waitTime: 18,
+    waitTimeInterval: getWaitTimeInterval(18),
     activityLevel: getActivityLevel(42, 18),
   },
   {
@@ -166,6 +195,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4217,
     capacity: 28,
     waitTime: 8,
+    waitTimeInterval: getWaitTimeInterval(8),
     activityLevel: getActivityLevel(28, 8),
   },
   {
@@ -177,6 +207,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4181,
     capacity: 75,
     waitTime: 45,
+    waitTimeInterval: getWaitTimeInterval(45),
     activityLevel: getActivityLevel(75, 45),
   },
   {
@@ -188,6 +219,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4303,
     capacity: 20,
     waitTime: 3,
+    waitTimeInterval: getWaitTimeInterval(3),
     activityLevel: getActivityLevel(20, 3),
   },
   
@@ -201,6 +233,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4242,
     capacity: 88,
     waitTime: 15,
+    waitTimeInterval: getWaitTimeInterval(15),
     activityLevel: getActivityLevel(88, 15),
   },
   {
@@ -212,6 +245,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4042,
     capacity: 52,
     waitTime: 10,
+    waitTimeInterval: getWaitTimeInterval(10),
     activityLevel: getActivityLevel(52, 10),
   },
   {
@@ -223,6 +257,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4208,
     capacity: 35,
     waitTime: 5,
+    waitTimeInterval: getWaitTimeInterval(5),
     activityLevel: getActivityLevel(35, 5),
   },
   {
@@ -234,6 +269,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4217,
     capacity: 72,
     waitTime: 20,
+    waitTimeInterval: getWaitTimeInterval(20),
     activityLevel: getActivityLevel(72, 20),
   },
   {
@@ -245,6 +281,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4156,
     capacity: 18,
     waitTime: 2,
+    waitTimeInterval: getWaitTimeInterval(2),
     activityLevel: getActivityLevel(18, 2),
   },
   {
@@ -256,6 +293,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4961,
     capacity: 48,
     waitTime: 8,
+    waitTimeInterval: getWaitTimeInterval(8),
     activityLevel: getActivityLevel(48, 8),
   },
   
@@ -269,6 +307,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4461,
     capacity: 60,
     waitTime: 30,
+    waitTimeInterval: getWaitTimeInterval(30),
     activityLevel: getActivityLevel(60, 30),
   },
   {
@@ -280,6 +319,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4208,
     capacity: 68,
     waitTime: 38,
+    waitTimeInterval: getWaitTimeInterval(38),
     activityLevel: getActivityLevel(68, 38),
   },
   {
@@ -291,7 +331,30 @@ export const mockVenues: Venue[] = [
     longitude: -122.4489,
     capacity: 50,
     waitTime: 22,
+    waitTimeInterval: getWaitTimeInterval(22),
     activityLevel: getActivityLevel(50, 22),
+    vibe: 8, // High vibe for social venue
+    crowd: 6, // Moderate crowd
+    isSpecialEvent: true,
+    specialEventDescription: 'Local celebrity spotted! 🎉',
+    liveComments: [
+      {
+        id: 'comment_1',
+        userId: 'user_abc123',
+        userName: 'u7x9k2m',
+        comment: 'Amazing cocktails and great energy tonight!',
+        timestamp: new Date(Date.now() - 5 * 60 * 1000), // 5 min ago
+        trustability: 85,
+      },
+      {
+        id: 'comment_2',
+        userId: 'user_def456',
+        userName: 'p4q8r1s',
+        comment: 'Crowd is picking up, but still manageable',
+        timestamp: new Date(Date.now() - 12 * 60 * 1000), // 12 min ago
+        trustability: 72,
+      },
+    ],
   },
   {
     id: '26',
@@ -302,6 +365,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4194,
     capacity: 85,
     waitTime: 65,
+    waitTimeInterval: getWaitTimeInterval(65),
     activityLevel: getActivityLevel(85, 65),
   },
   {
@@ -313,6 +377,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4375,
     capacity: 40,
     waitTime: 15,
+    waitTimeInterval: getWaitTimeInterval(15),
     activityLevel: getActivityLevel(40, 15),
   },
   {
@@ -324,6 +389,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4047,
     capacity: 58,
     waitTime: 28,
+    waitTimeInterval: getWaitTimeInterval(28),
     activityLevel: getActivityLevel(58, 28),
   },
   {
@@ -335,6 +401,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4347,
     capacity: 33,
     waitTime: 10,
+    waitTimeInterval: getWaitTimeInterval(10),
     activityLevel: getActivityLevel(33, 10),
   },
   {
@@ -346,6 +413,7 @@ export const mockVenues: Venue[] = [
     longitude: -122.4144,
     capacity: 80,
     waitTime: 25,
+    waitTimeInterval: getWaitTimeInterval(25),
     activityLevel: getActivityLevel(80, 25),
   },
 ];

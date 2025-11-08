@@ -70,16 +70,24 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogout }) =>
               <p className="text-center text-sm text-gray-600 dark:text-gray-400">{user.email}</p>
             </div>
 
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Trustability Score</span>
-                <span className="text-sm font-semibold text-gray-900 dark:text-white">{user.trustability}/100</span>
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Trustability Score</span>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white">{user.trustability}/100</span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div
+                    className="bg-blue-600 h-2 rounded-full transition-all"
+                    style={{ width: `${user.trustability}%` }}
+                  />
+                </div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div
-                  className="bg-blue-600 h-2 rounded-full transition-all"
-                  style={{ width: `${user.trustability}%` }}
-                />
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Reputation/Karma</span>
+                  <span className="text-sm font-semibold text-yellow-600 dark:text-yellow-400">⭐ {user.reputation || 0}</span>
+                </div>
               </div>
             </div>
 

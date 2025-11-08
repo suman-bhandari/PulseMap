@@ -1,5 +1,5 @@
 import React from 'react';
-import { Venue, Review } from '../../types';
+import { Venue } from '../../types';
 import { getReviews } from '../../services/reviews';
 import { formatWaitTime } from '../../utils/venueUtils';
 
@@ -77,9 +77,12 @@ const ReviewsList: React.FC<ReviewsListProps> = ({ venue, isOpen, onClose }) => 
                       </div>
                       <div>
                         <p className="font-semibold text-gray-900 dark:text-white">{review.userName}</p>
-                        <div className="flex items-center gap-2 text-xs">
+                        <div className="flex items-center gap-2 text-xs flex-wrap">
                           <span className={`font-medium ${getTrustabilityColor(review.userTrustability)}`}>
                             Trustability: {review.userTrustability}/100
+                          </span>
+                          <span className="text-gray-500 dark:text-gray-400">
+                            Activity: {review.activityQuotient}%
                           </span>
                           {review.verified && (
                             <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs">

@@ -7,6 +7,7 @@ import DarkModeToggle from './components/DarkModeToggle/DarkModeToggle';
 import AccountButton from './components/AccountButton/AccountButton';
 import ListView from './components/ListView/ListView';
 import LiveEventsPanel from './components/LiveEvents/LiveEventsPanel';
+import FeelingLucky from './components/FeelingLucky/FeelingLucky';
 import { mockVenues } from './data/mockVenues';
 import { Venue, VenueCategory, LiveEvent } from './types';
 import { filterVenuesByCategory, filterVenuesByActivity, getActivityColor } from './utils/venueUtils';
@@ -189,6 +190,9 @@ function App() {
         onClose={() => setIsEventsOpen(false)}
         onEventSelect={handleEventSelect}
       />
+
+      {/* I'm Feeling Lucky Button */}
+      <FeelingLucky onVenueSelect={handleVenueSelect} />
     </div>
     </AuthProvider>
   );

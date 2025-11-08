@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Venue } from '../../types';
-import { getCategoryLabel, getCategoryIcon, formatWaitTime, getActivityColor } from '../../utils/venueUtils';
+import { getCategoryLabel, getCategoryIcon, formatWaitTime, formatWaitTimeInterval, getActivityColor } from '../../utils/venueUtils';
 import { getAISummary, getReviews } from '../../services/reviews';
 import ReviewModal from '../Reviews/ReviewModal';
 import ReviewsList from '../Reviews/ReviewsList';
@@ -38,6 +38,18 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue }) => {
           </div>
         </div>
 
+        {/* Special Event Badge */}
+        {venue.isSpecialEvent && (
+          <div className="mb-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-300 dark:border-yellow-700">
+            <div className="flex items-center gap-1">
+              <span className="text-sm">⭐</span>
+              <p className="text-xs font-semibold text-yellow-800 dark:text-yellow-200">
+                {venue.specialEventDescription}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* AI Summary */}
         {aiSummary && (
           <div className="mb-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
@@ -57,10 +69,64 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue }) => {
               {venue.capacity}% capacity
             </span>
           </div>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            Wait time: {formatWaitTime(venue.waitTime)}
-          </p>
+          
+          {/* Service-based venues: Show wait time interval */}
+          {(venue.category === 'restaurant' || venue.category === 'salon' || venue.category === 'coffee') && (
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              Wait time: {venue.waitTimeInterval ? formatWaitTimeInterval(venue.waitTimeInterval) : formatWaitTime(venue.waitTime)}
+            </p>
+          )}
+          
+          {/* Social venues: Show vibe and crowd */}
+          {(venue.category === 'bar' || venue.category === 'club') && (
+            <div className="space-y-1">
+              {venue.vibe !== undefined && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">Vibe:</span>
+                  <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                    <div
+                      className="bg-purple-500 h-1.5 rounded-full"
+                      style={{ width: `${venue.vibe * 10}%` }}
+                    />
+                  </div>
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{venue.vibe}/10</span>
+                </div>
+              )}
+              {venue.crowd !== undefined && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">Crowd:</span>
+                  <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                    <div
+                      className="bg-orange-500 h-1.5 rounded-full"
+                      style={{ width: `${venue.crowd * 10}%` }}
+                    />
+                  </div>
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{venue.crowd}/10</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
+
+        {/* Live Comments */}
+        {venue.liveComments && venue.liveComments.length > 0 && (
+          <div className="mb-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Live Comments:</p>
+            <div className="space-y-1 max-h-20 overflow-y-auto">
+              {venue.liveComments.slice(0, 2).map((comment) => {
+                const timeAgo = Math.floor((Date.now() - comment.timestamp.getTime()) / 60000);
+                return (
+                  <div key={comment.id} className="text-xs">
+                    <span className="font-medium text-gray-600 dark:text-gray-400">{comment.userName}</span>
+                    <span className="text-gray-500 dark:text-gray-500"> ({comment.trustability}): </span>
+                    <span className="text-gray-700 dark:text-gray-300">{comment.comment}</span>
+                    <span className="text-gray-400 dark:text-gray-500 text-[10px]"> {timeAgo}m ago</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">{venue.address}</p>
 

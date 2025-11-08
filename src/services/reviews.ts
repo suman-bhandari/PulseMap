@@ -1,8 +1,26 @@
 import { Review, Venue } from '../types';
-import { getCurrentLocation } from './location';
+import { alembicReviews } from '../data/sampleReviews';
 
 // Mock storage for reviews
 const STORAGE_KEY = 'venueTracker_reviews';
+
+// Initialize with sample reviews for The Alembic
+const initializeSampleReviews = () => {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (!stored) {
+    const reviews: Review[] = alembicReviews.map((r, idx) => ({
+      ...r,
+      id: `review_${idx + 1}`,
+      createdAt: new Date(Date.now() - (idx + 1) * 24 * 60 * 60 * 1000),
+    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(reviews));
+  }
+};
+
+// Initialize on first load
+if (typeof window !== 'undefined') {
+  initializeSampleReviews();
+}
 
 export const getReviews = (venueId: string): Review[] => {
   const stored = localStorage.getItem(STORAGE_KEY);
@@ -61,7 +79,6 @@ export const checkLocationVerification = (
 
 export const getAISummary = (venue: Venue, reviews: Review[]): string => {
   // Mock AI-generated summary based on venue data and recent reviews
-  const recentReviews = reviews.slice(0, 3);
   const avgRating = reviews.length > 0
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
     : 0;

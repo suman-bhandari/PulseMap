@@ -10,9 +10,24 @@ export interface Venue {
   latitude: number;
   longitude: number;
   capacity: number; // 0-100
-  waitTime: number; // in minutes
+  waitTime: number; // in minutes (base estimate)
+  waitTimeInterval: [number, number]; // 85% confidence interval [min, max]
   activityLevel: ActivityLevel;
   aiSummary?: string; // AI-generated current vibe summary
+  vibe?: number; // 1-10 for social venues (bars, clubs)
+  crowd?: number; // 1-10 for social venues
+  isSpecialEvent?: boolean; // Star-marked special events
+  specialEventDescription?: string;
+  liveComments?: LiveComment[];
+}
+
+export interface LiveComment {
+  id: string;
+  userId: string;
+  userName: string; // anonymized/hashed
+  comment: string;
+  timestamp: Date;
+  trustability: number;
 }
 
 export interface MapMarker {
@@ -26,6 +41,7 @@ export interface User {
   name: string;
   avatarUrl?: string;
   trustability: number; // 0-100, starts at 0
+  reputation: number; // karma/reputation score
   totalReviews: number;
   createdAt: Date;
 }
@@ -34,9 +50,10 @@ export interface Review {
   id: string;
   venueId: string;
   userId: string;
-  userName: string;
+  userName: string; // anonymized/hashed
   userAvatarUrl?: string;
   userTrustability: number;
+  activityQuotient: number; // how active user is at this venue (0-100)
   rating: number; // 1-5
   comment: string;
   lastVisitDate: Date;
