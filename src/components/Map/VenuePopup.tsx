@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Venue } from '../../types';
 import { getCategoryLabel, getCategoryIcon, formatWaitTime, formatWaitTimeInterval, getActivityColor } from '../../utils/venueUtils';
 import { getAISummary, getReviews } from '../../services/reviews';
-import { getReputationColor, getReputationBgColor } from '../../utils/reputationUtils';
+import { getReputationColor } from '../../utils/reputationUtils';
 import ReviewModal from '../Reviews/ReviewModal';
 import ReviewsList from '../Reviews/ReviewsList';
 
