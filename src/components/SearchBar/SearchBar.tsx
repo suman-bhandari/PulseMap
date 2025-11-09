@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Venue } from '../../types';
+import { getCategoryLabel, getCategoryIcon } from '../../utils/venueUtils';
 
 interface SearchBarProps {
   venues: Venue[];
@@ -20,9 +21,29 @@ const SearchBar: React.FC<SearchBarProps> = ({ venues, onVenueSelect, onClear })
       return;
     }
 
-    const filtered = venues.filter((venue) =>
-      venue.name.toLowerCase().includes(query.toLowerCase())
-    );
+    const queryLower = query.toLowerCase().trim();
+    
+    // Category mapping for search
+    const categoryKeywords: Record<string, string[]> = {
+      'bar': ['bar', 'bars', 'club', 'clubs', 'pub', 'pubs', 'nightlife', 'drinks', 'beer', 'cocktail'],
+      'restaurant': ['restaurant', 'restaurants', 'dining', 'food', 'eat', 'cafe', 'bistro', 'diner'],
+      'salon': ['salon', 'salons', 'barber', 'barbers', 'haircut', 'hair', 'stylist', 'beauty', 'spa'],
+      'coffee': ['coffee', 'cafe', 'café', 'espresso', 'latte', 'cappuccino', 'brew', 'roastery'],
+    };
+
+    const filtered = venues.filter((venue) => {
+      const nameMatch = venue.name.toLowerCase().includes(queryLower);
+      const categoryLabel = getCategoryLabel(venue.category).toLowerCase();
+      const categoryMatch = categoryLabel.includes(queryLower);
+      
+      // Check if query matches any category keywords
+      const categoryKeywordsMatch = categoryKeywords[venue.category]?.some(keyword =>
+        keyword.includes(queryLower) || queryLower.includes(keyword)
+      ) || false;
+      
+      return nameMatch || categoryMatch || categoryKeywordsMatch;
+    });
+    
     setFilteredVenues(filtered);
     setIsOpen(filtered.length > 0);
   }, [query, venues]);
@@ -106,10 +127,14 @@ const SearchBar: React.FC<SearchBarProps> = ({ venues, onVenueSelect, onClear })
               className="w-full text-left px-4 py-3 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors border-b border-gray-100 last:border-b-0"
             >
               <div className="flex items-center gap-3">
-                <span className="text-lg">{venue.category === 'bar' || venue.category === 'club' ? '🍺' : venue.category === 'restaurant' ? '🍽️' : venue.category === 'salon' ? '✂️' : '☕'}</span>
+                <span className="text-lg">{getCategoryIcon(venue.category)}</span>
                 <div className="flex-1">
                   <p className="font-medium text-gray-900">{venue.name}</p>
-                  <p className="text-sm text-gray-500">{venue.address}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-gray-500">{getCategoryLabel(venue.category)}</p>
+                    <span className="text-gray-300">•</span>
+                    <p className="text-sm text-gray-500">{venue.address}</p>
+                  </div>
                 </div>
               </div>
             </button>
