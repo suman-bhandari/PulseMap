@@ -136,32 +136,46 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
                   <span>Min: {activityRange[0]}%</span>
                   <span>Max: {activityRange[1]}%</span>
                 </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={activityRange[0]}
-                  onChange={(e) =>
-                    onActivityRangeChange([
-                      parseInt(e.target.value),
-                      activityRange[1],
-                    ])
-                  }
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                />
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={activityRange[1]}
-                  onChange={(e) =>
-                    onActivityRangeChange([
-                      activityRange[0],
-                      parseInt(e.target.value),
-                    ])
-                  }
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600 mt-2"
-                />
+                <div className="relative h-8 flex items-center">
+                  {/* Background track */}
+                  <div className="absolute w-full h-2 bg-gray-200 rounded-lg" />
+                  {/* Active range highlight */}
+                  <div 
+                    className="absolute h-2 bg-blue-600 rounded-lg"
+                    style={{
+                      left: `${activityRange[0]}%`,
+                      width: `${activityRange[1] - activityRange[0]}%`
+                    }}
+                  />
+                  {/* Min slider */}
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={activityRange[0]}
+                    onChange={(e) => {
+                      const newMin = parseInt(e.target.value);
+                      if (newMin <= activityRange[1]) {
+                        onActivityRangeChange([newMin, activityRange[1]]);
+                      }
+                    }}
+                    className="absolute w-full h-2 bg-transparent appearance-none cursor-pointer z-10 range-input"
+                  />
+                  {/* Max slider */}
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={activityRange[1]}
+                    onChange={(e) => {
+                      const newMax = parseInt(e.target.value);
+                      if (newMax >= activityRange[0]) {
+                        onActivityRangeChange([activityRange[0], newMax]);
+                      }
+                    }}
+                    className="absolute w-full h-2 bg-transparent appearance-none cursor-pointer z-20 range-input"
+                  />
+                </div>
               </div>
               <div className="flex gap-2 text-xs">
                 <div className="flex-1 text-center">

@@ -87,3 +87,47 @@
 .animate-slide-in {
   animation: slide-in 0.5s ease-out forwards;
 }
+
+/* Dual range slider styling */
+.range-input {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #3B82F6;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  margin-top: -8px;
+  z-index: 30;
+}
+
+.range-input::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #3B82F6;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 30;
+}
+
+.range-input::-webkit-slider-runnable-track {
+  height: 2px;
+  background: transparent;
+}
+
+.range-input::-moz-range-track {
+  height: 2px;
+  background: transparent;
+  border: none;
+}
