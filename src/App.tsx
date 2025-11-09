@@ -15,7 +15,7 @@ import './App.css';
 function AppContent() {
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<VenueCategory | 'all'>('all');
-  const [vibeRange, setVibeRange] = useState<[number, number]>([0, 5]);
+  const [minVibe, setMinVibe] = useState<number>(0);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isEventsOpen, setIsEventsOpen] = useState(false);
@@ -33,21 +33,23 @@ function AppContent() {
   const filteredVenues = useMemo(() => {
     let venues = filterVenuesByCategory(mockVenues, selectedCategory);
     // Filter by vibe for entertainment venues (bar, club)
-    venues = venues.filter((v) => {
-      if (v.category === 'bar' || v.category === 'club') {
-        // For entertainment venues, filter by aggregated vibe
-        // For now, use the vibe property if available, otherwise skip filtering
-        if (v.vibe !== undefined) {
-          return v.vibe >= vibeRange[0] && v.vibe <= vibeRange[1];
+    if (minVibe > 0) {
+      venues = venues.filter((v) => {
+        if (v.category === 'bar' || v.category === 'club') {
+          // For entertainment venues, filter by aggregated vibe
+          // For now, use the vibe property if available, otherwise skip filtering
+          if (v.vibe !== undefined) {
+            return v.vibe >= minVibe;
+          }
+          // If no vibe set, include it (will be calculated from comments)
+          return true;
         }
-        // If no vibe set, include it (will be calculated from comments)
+        // For non-entertainment venues, include all
         return true;
-      }
-      // For non-entertainment venues, include all
-      return true;
-    });
+      });
+    }
     return venues;
-  }, [selectedCategory, vibeRange]);
+  }, [selectedCategory, minVibe]);
 
 
   const handleVenueSelect = (venue: Venue | null) => {
@@ -76,6 +78,24 @@ function AppContent() {
     setIsEventsOpen(false);
   };
 
+  // Listen for custom events from FilterPanel
+  useEffect(() => {
+    const handleOpenLiveEvents = () => setIsEventsOpen(true);
+    const handleOpenFeelingLucky = () => {
+      // Trigger FeelingLucky component to open
+      const event = new CustomEvent('feelingLuckyOpen');
+      window.dispatchEvent(event);
+    };
+
+    window.addEventListener('openLiveEvents', handleOpenLiveEvents);
+    window.addEventListener('openFeelingLucky', handleOpenFeelingLucky);
+
+    return () => {
+      window.removeEventListener('openLiveEvents', handleOpenLiveEvents);
+      window.removeEventListener('openFeelingLucky', handleOpenFeelingLucky);
+    };
+  }, []);
+
   return (
     <div className="h-screen w-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
         <DarkModeToggle isDark={isDarkMode} onToggle={() => setIsDarkMode(!isDarkMode)} />
@@ -90,16 +110,6 @@ function AppContent() {
         />
       </div>
 
-      {/* Live Events Button */}
-      <div className="absolute top-20 right-4 z-50">
-        <button
-          onClick={() => setIsEventsOpen(true)}
-          className="px-4 py-2 bg-purple-600 text-white rounded-lg shadow-lg hover:bg-purple-700 transition-colors text-sm font-medium flex items-center gap-2"
-        >
-          <span>🎉</span>
-          <span>Live Events</span>
-        </button>
-      </div>
 
       {/* Main Content */}
       <div className="flex h-full pt-24 lg:pt-20">
@@ -108,10 +118,12 @@ function AppContent() {
           <FilterPanel
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
-            vibeRange={vibeRange}
-            onVibeRangeChange={setVibeRange}
+            minVibe={minVibe}
+            onMinVibeChange={setMinVibe}
             isOpen={isFilterOpen}
             onToggle={() => setIsFilterOpen(!isFilterOpen)}
+            onEventSelect={handleEventSelect}
+            onVenueSelect={(venue) => handleVenueSelect(venue)}
           />
         </div>
 
@@ -130,10 +142,12 @@ function AppContent() {
         <FilterPanel
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
-          vibeRange={vibeRange}
-          onVibeRangeChange={setVibeRange}
+          minVibe={minVibe}
+          onMinVibeChange={setMinVibe}
           isOpen={isFilterOpen}
           onToggle={() => setIsFilterOpen(!isFilterOpen)}
+          onEventSelect={handleEventSelect}
+          onVenueSelect={(venue) => handleVenueSelect(venue)}
         />
       </div>
 
@@ -144,7 +158,7 @@ function AppContent() {
         onEventSelect={handleEventSelect}
       />
 
-      {/* I'm Feeling Lucky Button */}
+      {/* I'm Feeling Lucky - handled via FilterPanel */}
       <FeelingLucky onVenueSelect={handleVenueSelect} />
     </div>
   );

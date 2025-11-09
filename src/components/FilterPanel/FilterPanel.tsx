@@ -1,22 +1,26 @@
 import React from 'react';
-import { VenueCategory } from '../../types';
+import { VenueCategory, Venue, LiveEvent } from '../../types';
 
 interface FilterPanelProps {
   selectedCategory: VenueCategory | 'all';
   onCategoryChange: (category: VenueCategory | 'all') => void;
-  vibeRange: [number, number];
-  onVibeRangeChange: (range: [number, number]) => void;
+  minVibe: number;
+  onMinVibeChange: (vibe: number) => void;
   isOpen: boolean;
   onToggle: () => void;
+  onEventSelect?: (event: LiveEvent) => void;
+  onVenueSelect?: (venue: Venue) => void;
 }
 
 const FilterPanel: React.FC<FilterPanelProps> = ({
   selectedCategory,
   onCategoryChange,
-  vibeRange,
-  onVibeRangeChange,
+  minVibe,
+  onMinVibeChange,
   isOpen,
   onToggle,
+  onEventSelect,
+  onVenueSelect,
 }) => {
   const categories: Array<{ value: VenueCategory | 'all'; label: string; icon: string }> = [
     { value: 'all', label: 'All', icon: '📍' },
@@ -97,6 +101,36 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             Filters
           </h2>
 
+          {/* Live Events Button */}
+          {onEventSelect && (
+            <div className="mb-6">
+              <button
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('openLiveEvents'));
+                }}
+                className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg shadow-lg hover:from-purple-700 hover:to-pink-700 transition-all text-sm font-semibold flex items-center justify-center gap-2"
+              >
+                <span>🎉</span>
+                <span>Live Events</span>
+              </button>
+            </div>
+          )}
+
+          {/* I'm Feeling Lucky Button */}
+          {onVenueSelect && (
+            <div className="mb-6">
+              <button
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('openFeelingLucky'));
+                }}
+                className="w-full px-4 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg shadow-lg hover:from-yellow-600 hover:to-orange-600 transition-all text-sm font-semibold flex items-center justify-center gap-2"
+              >
+                <span>🍀</span>
+                <span>I'm Feeling Lucky</span>
+              </button>
+            </div>
+          )}
+
           {/* Category Filters */}
           <div className="mb-8">
             <h3 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
@@ -125,60 +159,33 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             </div>
           </div>
 
-          {/* Vibe Range Slider */}
+          {/* Vibe - Fire Emoji Selection */}
           <div>
             <h3 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
               Vibe
             </h3>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm text-gray-600 mb-2">
-                  <span>Min: {vibeRange[0]}/5</span>
-                  <span>Max: {vibeRange[1]}/5</span>
-                </div>
-                <div className="relative h-8 flex items-center">
-                  {/* Background track */}
-                  <div className="absolute w-full h-2 bg-gray-200 rounded-lg" />
-                  {/* Active range highlight */}
-                  <div 
-                    className="absolute h-2 bg-blue-600 rounded-lg"
-                    style={{
-                      left: `${(vibeRange[0] / 5) * 100}%`,
-                      width: `${((vibeRange[1] - vibeRange[0]) / 5) * 100}%`
+            <div className="flex items-center gap-1">
+              {Array.from({ length: 5 }).map((_, i) => {
+                const rating = i + 1; // 1, 2, 3, 4, 5 (5 fires representing 1-5, 0 is unselected)
+                const isSelected = minVibe >= rating;
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      // Clicking fire N sets minVibe to N (1-5)
+                      // If clicking the same fire again, set to 0
+                      onMinVibeChange(minVibe === rating ? 0 : rating);
                     }}
-                  />
-                  {/* Min slider */}
-                  <input
-                    type="range"
-                    min="0"
-                    max="5"
-                    step="0.5"
-                    value={vibeRange[0]}
-                    onChange={(e) => {
-                      const newMin = parseFloat(e.target.value);
-                      if (newMin <= vibeRange[1]) {
-                        onVibeRangeChange([newMin, vibeRange[1]]);
-                      }
-                    }}
-                    className="absolute w-full h-2 bg-transparent appearance-none cursor-pointer z-10 range-input"
-                  />
-                  {/* Max slider */}
-                  <input
-                    type="range"
-                    min="0"
-                    max="5"
-                    step="0.5"
-                    value={vibeRange[1]}
-                    onChange={(e) => {
-                      const newMax = parseFloat(e.target.value);
-                      if (newMax >= vibeRange[0]) {
-                        onVibeRangeChange([vibeRange[0], newMax]);
-                      }
-                    }}
-                    className="absolute w-full h-2 bg-transparent appearance-none cursor-pointer z-20 range-input"
-                  />
-                </div>
-              </div>
+                    className={`text-lg transition-all ${
+                      isSelected ? 'opacity-100' : 'opacity-20'
+                    } hover:opacity-60`}
+                    title={`${rating}/5`}
+                  >
+                    🔥
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

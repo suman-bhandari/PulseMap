@@ -1,5 +1,18 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { User } from '../../types';
+
+interface Coupon {
+  id: string;
+  title: string;
+  description: string;
+  discount: string;
+  venue: string;
+  minTrust: number;
+  minExp: number;
+  icon: string;
+  color: string;
+}
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -15,6 +28,73 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogout }) =>
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showRedeem, setShowRedeem] = useState(false);
+
+  // Dummy coupons based on trust and EXP
+  const availableCoupons: Coupon[] = [
+    {
+      id: '1',
+      title: '20% Off Drinks',
+      description: 'Valid at all bars and clubs',
+      discount: '20% OFF',
+      venue: 'Bars & Clubs',
+      minTrust: 3.0,
+      minExp: 1000,
+      icon: '🍺',
+      color: 'from-blue-500 to-blue-600',
+    },
+    {
+      id: '2',
+      title: 'Free Haircut',
+      description: 'First haircut free at participating barbershops',
+      discount: 'FREE',
+      venue: 'Barbershops',
+      minTrust: 4.0,
+      minExp: 2000,
+      icon: '✂️',
+      color: 'from-purple-500 to-purple-600',
+    },
+    {
+      id: '3',
+      title: 'VIP Entry',
+      description: 'Skip the line at select nightclubs',
+      discount: 'VIP',
+      venue: 'Nightclubs',
+      minTrust: 4.5,
+      minExp: 3000,
+      icon: '⭐',
+      color: 'from-yellow-500 to-orange-500',
+    },
+    {
+      id: '4',
+      title: 'Massage Discount',
+      description: '30% off spa and massage services',
+      discount: '30% OFF',
+      venue: 'Spa & Wellness',
+      minTrust: 3.5,
+      minExp: 1500,
+      icon: '💆',
+      color: 'from-pink-500 to-rose-500',
+    },
+    {
+      id: '5',
+      title: 'Happy Hour Extended',
+      description: 'Extended happy hour at partner venues',
+      discount: 'EXTENDED',
+      venue: 'Bars',
+      minTrust: 3.0,
+      minExp: 1000,
+      icon: '🍹',
+      color: 'from-green-500 to-emerald-500',
+    },
+  ];
+
+  const getAvailableCoupons = (): Coupon[] => {
+    if (!user) return [];
+    return availableCoupons.filter(
+      (coupon) => user.reputation >= coupon.minTrust && (user.karma || 0) >= coupon.minExp
+    );
+  };
 
   if (!isOpen) return null;
 
@@ -110,6 +190,13 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogout }) =>
             </div>
 
             <button
+              onClick={() => setShowRedeem(true)}
+              className="w-full px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all font-medium shadow-lg"
+            >
+              🎁 Redeem Coupons
+            </button>
+
+            <button
               onClick={() => {
                 onLogout();
                 onClose();
@@ -119,6 +206,78 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogout }) =>
               Sign Out
             </button>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Redeem Coupons View
+  if (user && showRedeem) {
+    const coupons = getAvailableCoupons();
+    // TypeScript type guard - user is guaranteed to be non-null here
+    const currentUser: User = user;
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Redeem Coupons</h2>
+            <button
+              onClick={() => setShowRedeem(false)}
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              Based on your <span className="font-semibold">Trust: {currentUser.reputation.toFixed(1)}/5</span> and{' '}
+              <span className="font-semibold">EXP: {currentUser.karma >= 1000 ? `${(currentUser.karma / 1000).toFixed(1)}k` : currentUser.karma}</span>, 
+              you have access to {coupons.length} coupon{coupons.length !== 1 ? 's' : ''}!
+            </p>
+          </div>
+
+          {coupons.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500 dark:text-gray-400 mb-2">No coupons available yet</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">
+                Increase your Trust score and EXP to unlock more rewards!
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {coupons.map((coupon) => (
+                <div
+                  key={coupon.id}
+                  className={`relative bg-gradient-to-br ${coupon.color} rounded-lg p-4 text-white shadow-lg transform transition-transform hover:scale-105`}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="text-3xl">{coupon.icon}</div>
+                    <div className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1">
+                      <span className="text-xs font-bold">{coupon.discount}</span>
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-bold mb-1">{coupon.title}</h3>
+                  <p className="text-sm text-white/90 mb-2">{coupon.description}</p>
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/20">
+                    <span className="text-xs text-white/80">{coupon.venue}</span>
+                    <button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded px-3 py-1 text-xs font-semibold transition-colors">
+                      Redeem
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button
+            onClick={() => setShowRedeem(false)}
+            className="mt-4 w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors font-medium"
+          >
+            Back to Profile
+          </button>
         </div>
       </div>
     );

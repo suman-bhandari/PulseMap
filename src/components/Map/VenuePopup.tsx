@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Venue, VenueImage } from '../../types';
 import { getCategoryLabel, getCategoryIcon, formatWaitTime, formatWaitTimeInterval, getActivityColor } from '../../utils/venueUtils';
 import { getAISummary, getReviews } from '../../services/reviews';
-import { getReputationColor, getReputationBgColor, formatTimeAgo } from '../../utils/reputationUtils';
+import { getReputationColor, getReputationBgColor, formatTimeAgo, generateExp } from '../../utils/reputationUtils';
 import { useAuth } from '../../context/AuthContext';
 import ReviewModal from '../Reviews/ReviewModal';
 import ReviewsList from '../Reviews/ReviewsList';
@@ -147,6 +147,8 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
     };
 
     const randomComment = potentialComments[Math.floor(Math.random() * potentialComments.length)];
+    // Generate EXP using max(500, normal(2000, 1000))
+    const exp = generateExp();
     const newComment = {
       id: `comment_realtime_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
       userId: `user_${Math.random().toString(36).substring(2, 9)}`,
@@ -155,6 +157,7 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
       timestamp: new Date(),
       trustability: randomComment.trustability,
       reputation: randomComment.reputation,
+      karma: exp, // Use Gamma-distributed EXP
     };
 
     setLiveComments((prev) => {
@@ -179,20 +182,20 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
     });
   }, []);
 
-  // Trigger first comment 2 seconds after venue opens
+  // Trigger first comment 2 seconds after venue opens (skip for Floyd's Barbershop)
   useEffect(() => {
-    if (!venue) return;
+    if (!venue || venue.id === '31') return; // Skip auto-comments for Floyd's Barbershop
 
     const firstCommentTimer = setTimeout(() => {
       addNewComment();
     }, 2000); // 2 seconds after opening
 
     return () => clearTimeout(firstCommentTimer);
-  }, [venue]);
+  }, [venue, addNewComment]);
 
-  // Simulate real-time comment updates (subsequent comments)
+  // Simulate real-time comment updates (subsequent comments) - skip for Floyd's Barbershop
   useEffect(() => {
-    if (!venue) return;
+    if (!venue || venue.id === '31') return; // Skip auto-comments for Floyd's Barbershop
 
     const interval = setInterval(() => {
       // Randomly decide if a new comment should appear (30% chance)
@@ -202,7 +205,7 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
     }, Math.random() * 5000 + 5000); // Random interval between 5-10 seconds
 
     return () => clearInterval(interval);
-  }, [venue]);
+  }, [venue, addNewComment]);
 
   const handleGetDirections = () => {
     const url = `https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}`;
@@ -259,8 +262,12 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
     if (!newComment.trim() || !user) return;
     
     // Validate required fields based on venue type
+    if (isEntertainmentVenue && vibeRating === 0) {
+      alert('Please select a vibe rating (1-5)');
+      return;
+    }
     if (isEntertainmentVenue && (vibeRating < 0 || vibeRating > 5)) {
-      alert('Please provide a vibe rating between 0-5');
+      alert('Please provide a vibe rating between 1-5');
       return;
     }
     if (isServiceVenue && (waitTimeMin < 0 || waitTimeMax < waitTimeMin)) {
@@ -329,8 +336,14 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
     return [Math.max(0, estimatedCrowd - 5), estimatedCrowd + 5];
   }, [venue.crowdRange, venue.capacity]);
 
-  // Calculate max crowd for display scale (use 100 as max for visualization)
-  const maxCrowdForDisplay = 100;
+  // Calculate max crowd for display scale - adjust based on venue
+  const maxCrowdForDisplay = useMemo(() => {
+    // For small venues like barbershops (2-3 people), use a smaller max scale (e.g., 10) for better visualization
+    if (venue.crowdRange && venue.crowdRange[1] <= 5) {
+      return 10; // Smaller scale for small venues
+    }
+    return 100; // Default scale for larger venues
+  }, [venue.crowdRange]);
 
   // Calculate wait time range for service venues from live comments
   const displayWaitTimeRange = useMemo(() => {
@@ -356,40 +369,32 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-gray-900 dark:text-white text-xs whitespace-nowrap truncate">{venue.name}</h3>
-                <p className="text-[10px] text-gray-600 dark:text-gray-400">{getCategoryLabel(venue.category)}</p>
                 
-                {/* Crowd Range Display - for all venues */}
-                <div className="mt-1">
-                  <p className="text-[9px] text-gray-600 dark:text-gray-400 mb-0.5">Crowd</p>
-                  <div className="relative h-4 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full overflow-hidden">
-                    {/* Blue highlighted interval */}
-                    <div
-                      className="absolute h-full bg-blue-600 rounded-full"
-                      style={{
-                        left: `${Math.min(95, (displayCrowdRange[0] / maxCrowdForDisplay) * 100)}%`,
-                        width: `${Math.min(100 - (displayCrowdRange[0] / maxCrowdForDisplay) * 100, ((displayCrowdRange[1] - displayCrowdRange[0]) / maxCrowdForDisplay) * 100)}%`
-                      }}
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-[8px] font-medium text-gray-700 dark:text-gray-300 z-10">
+                {/* Metrics in horizontal layout - for entertainment venues */}
+                {isEntertainmentVenue && (
+                  <div className="mt-1 flex items-center gap-2 flex-wrap">
+                    {/* Vibe Rating (fire symbols) */}
+                    {aggregatedVibe !== undefined && roundedVibe !== undefined && (
+                      <div className="flex items-center gap-1">
+                        <span className="text-[9px] text-gray-600 dark:text-gray-400">Vibe:</span>
+                        {renderVibeFires(roundedVibe)}
+                        <span className="text-[9px] font-medium text-gray-700 dark:text-gray-300">
+                          {aggregatedVibe.toFixed(1)}/5
+                        </span>
+                      </div>
+                    )}
+                    
+                    {/* Crowd Range Display */}
+                    <div className="flex items-center gap-1">
+                      <span className="text-[9px] text-gray-600 dark:text-gray-400">Crowd:</span>
+                      <span className="text-[9px] font-medium text-gray-700 dark:text-gray-300">
                         {displayCrowdRange[0]} - {displayCrowdRange[1]} people
                       </span>
                     </div>
                   </div>
-                </div>
-
-                {/* Vibe Rating (fire symbols) - for entertainment venues */}
-                {isEntertainmentVenue && aggregatedVibe !== undefined && roundedVibe !== undefined && (
-                  <div className="mt-1 flex items-center gap-1">
-                    <span className="text-[9px] text-gray-600 dark:text-gray-400">Vibe:</span>
-                    {renderVibeFires(roundedVibe)}
-                    <span className="text-[9px] font-medium text-gray-700 dark:text-gray-300">
-                      {aggregatedVibe.toFixed(1)}/5
-                    </span>
-                  </div>
                 )}
 
-                {/* Wait Time Range - for service venues */}
+                {/* Wait Time Range - for service venues only (no crowd) */}
                 {isServiceVenue && (
                   <div className="mt-1">
                     <p className="text-[9px] text-gray-600 dark:text-gray-400 mb-0.5">Wait Time</p>
@@ -417,55 +422,57 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
 
         {/* Two Scrollable Sections */}
         <div className="flex-1 flex flex-col overflow-hidden min-h-0 gap-1">
-          {/* Top Section: Details - Scrollable */}
-          <div className="flex-[1.5] overflow-y-auto min-h-0 pr-1">
-            {/* Special Event Badge */}
-            {venue.isSpecialEvent && (
-              <div className="mb-1 p-1.5 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-300 dark:border-yellow-700">
-                <div className="flex items-center gap-1">
-                  <span className="text-xs">⭐</span>
-                  <p className="text-[10px] font-semibold text-yellow-800 dark:text-yellow-200">
-                    {venue.specialEventDescription}
-                  </p>
+          {/* Top Section: Details - No scroll, squeezed */}
+          <div className="flex-[1.5] overflow-hidden min-h-0 pr-1">
+            <div className="space-y-0.5">
+              {/* Special Event Badge */}
+              {venue.isSpecialEvent && (
+                <div className="p-0.5 bg-yellow-50 dark:bg-yellow-900/20 rounded border border-yellow-300 dark:border-yellow-700">
+                  <div className="flex items-center gap-0.5">
+                    <span className="text-[10px]">⭐</span>
+                    <p className="text-[9px] font-semibold text-yellow-800 dark:text-yellow-200">
+                      {venue.specialEventDescription}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* AI Summary */}
-            {aiSummary && (
-              <div className="mb-1">
-                <p className="text-[10px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">Live GenAI Summary</p>
-                <div className="p-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <p className="text-[10px] text-gray-700 dark:text-gray-300 italic">
-                    "{aiSummary}"
-                  </p>
+              {/* AI Summary */}
+              {aiSummary && (
+                <div>
+                  <p className="text-[9px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">Live GenAI Summary</p>
+                  <div className="p-0.5 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
+                    <p className="text-[9px] text-gray-700 dark:text-gray-300 italic leading-tight">
+                      "{aiSummary}"
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <p className="text-[10px] text-gray-500 dark:text-gray-400 mb-1">{venue.address}</p>
+              <p className="text-[9px] text-gray-500 dark:text-gray-400">{venue.address}</p>
 
-            {/* User Uploaded Images */}
-            {venue.userImages && venue.userImages.length > 0 && (
-              <div className="mb-1">
-                <p className="text-[10px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">Photos</p>
-                <div className="grid grid-cols-3 gap-0.5">
-                  {venue.userImages.slice(0, 6).map((image) => (
-                    <button
-                      key={image.id}
-                      onClick={() => setExpandedImage(image)}
-                      className="relative aspect-square rounded-lg overflow-hidden hover:opacity-80 transition-opacity"
-                    >
-                      <img
-                        src={image.url}
-                        alt={image.caption || 'Venue'}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
+              {/* User Uploaded Images */}
+              {venue.userImages && venue.userImages.length > 0 && (
+                <div>
+                  <p className="text-[9px] font-semibold text-gray-700 dark:text-gray-300 mb-0.5">Photos</p>
+                  <div className="grid grid-cols-3 gap-0.5">
+                    {venue.userImages.slice(0, 6).map((image) => (
+                      <button
+                        key={image.id}
+                        onClick={() => setExpandedImage(image)}
+                        className="relative aspect-square rounded overflow-hidden hover:opacity-80 transition-opacity"
+                      >
+                        <img
+                          src={image.url}
+                          alt={image.caption || 'Venue'}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Bottom Section: Live Comments - Scrollable */}
@@ -549,14 +556,18 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
                   <div className="flex items-center gap-2 px-2">
                     <label className="text-[9px] text-gray-600 dark:text-gray-400 whitespace-nowrap">Vibe:</label>
                     <div className="flex items-center gap-0.5">
-                      {Array.from({ length: 6 }).map((_, i) => {
-                        const rating = i; // 0, 1, 2, 3, 4, 5
+                      {Array.from({ length: 5 }).map((_, i) => {
+                        const rating = i + 1; // 1, 2, 3, 4, 5 (5 fires representing 1-5, 0 is unselected)
                         const isSelected = vibeRating >= rating;
                         return (
                           <button
                             key={i}
                             type="button"
-                            onClick={() => setVibeRating(rating)}
+                            onClick={() => {
+                              // Clicking fire N sets rating to N (1-5)
+                              // If clicking the same fire again, set to 0
+                              setVibeRating(vibeRating === rating ? 0 : rating);
+                            }}
                             className={`text-sm transition-all ${
                               isSelected ? 'opacity-100' : 'opacity-20'
                             } hover:opacity-60`}

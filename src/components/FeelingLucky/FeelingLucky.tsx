@@ -12,6 +12,13 @@ const FeelingLucky: React.FC<FeelingLuckyProps> = ({ onVenueSelect }) => {
   const [isListening, setIsListening] = useState(false);
   const [matchedVenue, setMatchedVenue] = useState<Venue | null>(null);
 
+  // Listen for custom event to open
+  React.useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('openFeelingLucky', handleOpen);
+    return () => window.removeEventListener('openFeelingLucky', handleOpen);
+  }, []);
+
   const handleMatch = () => {
     if (!vibeInput.trim()) return;
 

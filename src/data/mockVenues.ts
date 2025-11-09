@@ -1,4 +1,5 @@
 import { Venue, ActivityLevel } from '../types';
+import { generateExp } from '../utils/reputationUtils';
 
 // Helper function to determine activity level
 function getActivityLevel(capacity: number, waitTime: number): ActivityLevel {
@@ -402,6 +403,7 @@ export const mockVenues: Venue[] = [
         trustability: 85,
         reputation: 4.3, // normalized from trustability
         vibe: 4.5, // Vibe rating for entertainment venue (0-5 scale, converted from 9/10)
+        karma: generateExp(),
       },
       {
         id: 'comment_2',
@@ -412,6 +414,7 @@ export const mockVenues: Venue[] = [
         trustability: 72,
         reputation: 3.6,
         vibe: 3.5, // Converted from 7/10
+        karma: generateExp(),
       },
       {
         id: 'comment_3',
@@ -422,6 +425,7 @@ export const mockVenues: Venue[] = [
         trustability: 95,
         reputation: 4.8,
         vibe: 5.0, // Converted from 10/10
+        karma: generateExp(),
       },
       {
         id: 'comment_4',
@@ -432,6 +436,7 @@ export const mockVenues: Venue[] = [
         trustability: 45,
         reputation: 2.3,
         vibe: 4.0, // Converted from 8/10
+        karma: generateExp(),
       },
     ],
   },
@@ -526,51 +531,56 @@ export const mockVenues: Venue[] = [
         id: 'floyd_comment_1',
         userId: 'user_barber1',
         userName: 'Mike',
-        comment: 'Great cut! The barber really knows his stuff. Clean and professional.',
+        comment: 'Perfect fade! The barber took his time and did an excellent job. Classic barbershop experience.',
         timestamp: new Date(Date.now() - 5 * 60 * 1000), // 5 min ago
         trustability: 78,
         reputation: 3.9,
         waitTimeRange: [20, 25],
+        karma: generateExp(),
       },
       {
         id: 'floyd_comment_2',
         userId: 'user_barber2',
         userName: 'David',
-        comment: 'Just finished my trim. Wait was about 25 minutes but worth it. Quality service!',
+        comment: 'Just got my beard trimmed. Professional service, clean shop. Wait was about 25 minutes.',
         timestamp: new Date(Date.now() - 12 * 60 * 1000), // 12 min ago
         trustability: 82,
         reputation: 4.1,
         waitTimeRange: [22, 28],
+        karma: generateExp(),
       },
       {
         id: 'floyd_comment_3',
         userId: 'user_barber3',
         userName: 'Chris',
-        comment: 'Hot towel shave was amazing! Only 2 people ahead of me when I arrived.',
+        comment: 'Hot towel shave was incredible! Old-school barbershop feel. Only 2 people ahead when I got here.',
         timestamp: new Date(Date.now() - 18 * 60 * 1000), // 18 min ago
         trustability: 91,
         reputation: 4.6,
         waitTimeRange: [18, 22],
+        karma: generateExp(),
       },
       {
         id: 'floyd_comment_4',
         userId: 'user_barber4',
         userName: 'Alex',
-        comment: 'Classic barbershop vibe. Got a perfect fade. Wait time was around 20-25 min.',
+        comment: 'Great haircut! The barber really knows classic cuts. Wait time was around 20-25 minutes.',
         timestamp: new Date(Date.now() - 25 * 60 * 1000), // 25 min ago
         trustability: 65,
         reputation: 3.3,
         waitTimeRange: [20, 30],
+        karma: generateExp(),
       },
       {
         id: 'floyd_comment_5',
         userId: 'user_barber5',
         userName: 'Jordan',
-        comment: 'Best haircut I\'ve had in SF. Staff is friendly and the place is clean.',
+        comment: 'Best barbershop in the Mission! Clean, professional, and they really care about the details.',
         timestamp: new Date(Date.now() - 32 * 60 * 1000), // 32 min ago
         trustability: 88,
         reputation: 4.4,
         waitTimeRange: [25, 30],
+        karma: generateExp(),
       },
     ],
   },
