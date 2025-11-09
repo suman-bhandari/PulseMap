@@ -31,6 +31,15 @@ export interface Venue {
   phone?: string;
   website?: string;
   description?: string;
+  userImages?: VenueImage[]; // images uploaded by users
+}
+
+export interface VenueImage {
+  id: string;
+  url: string;
+  uploadedBy: string; // userId
+  uploadedAt: Date;
+  caption?: string;
 }
 
 export interface LiveComment {
@@ -41,6 +50,7 @@ export interface LiveComment {
   timestamp: Date;
   trustability: number;
   reputation: number; // 0-5, normalized reputation for color coding
+  images?: string[]; // optional array of image URLs
 }
 
 export interface MapMarker {
