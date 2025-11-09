@@ -140,14 +140,6 @@ const FeelingLucky: React.FC<FeelingLuckyProps> = ({ onVenueSelect }) => {
 
   return (
     <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center gap-2 font-medium"
-      >
-        <span className="text-lg">🍀</span>
-        <span className="hidden sm:block">I'm Feeling Lucky</span>
-      </button>
-
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" onClick={() => setIsOpen(false)}>
           <div

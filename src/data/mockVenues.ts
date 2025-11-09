@@ -453,18 +453,6 @@ export const mockVenues: Venue[] = [
     activityLevel: getActivityLevel(85, 65),
   },
   {
-    id: '27',
-    name: 'The Page',
-    category: 'bar',
-    address: '298 Divisadero St, San Francisco, CA 94117',
-    latitude: 37.7731,
-    longitude: -122.4375,
-    capacity: 40,
-    waitTime: 15,
-    waitTimeInterval: getWaitTimeInterval(15),
-    activityLevel: getActivityLevel(40, 15),
-  },
-  {
     id: '28',
     name: 'Café Claude',
     category: 'restaurant',
