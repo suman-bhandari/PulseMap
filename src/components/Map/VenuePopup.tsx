@@ -65,6 +65,8 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
   const [vibeRating, setVibeRating] = useState<number>(0); // For entertainment venues (0-5 scale)
   const [waitTimeMin, setWaitTimeMin] = useState<number>(10); // For service venues
   const [waitTimeMax, setWaitTimeMax] = useState<number>(15); // For service venues
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [expandedCommentImage, setExpandedCommentImage] = useState<string | null>(null);
 
   useEffect(() => {
     const reviews = getReviews(venue.id);
@@ -259,7 +261,7 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
   };
 
   const handleAddComment = () => {
-    if (!newComment.trim() || !user) return;
+    if ((!newComment.trim() && selectedImages.length === 0) || !user) return;
     
     // Validate required fields based on venue type
     if (isEntertainmentVenue && vibeRating === 0) {
@@ -299,6 +301,11 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
       comment.waitTimeRange = [waitTimeMin, waitTimeMax];
     }
 
+    // Add images if any
+    if (selectedImages.length > 0) {
+      comment.images = selectedImages;
+    }
+
     // Add comment at the top of the list
     setLiveComments((prev) => {
       const updated = [comment, ...prev].slice(0, 15);
@@ -325,6 +332,7 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
     setVibeRating(0);
     setWaitTimeMin(10);
     setWaitTimeMax(15);
+    setSelectedImages([]);
   };
 
   // Calculate crowd range from live comments (if available) or use venue's crowdRange
@@ -516,14 +524,16 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
                           {formatTimeAgo(comment.timestamp)}
                         </span>
                       </div>
-                      <p className="text-[10px] text-gray-700 dark:text-gray-300">{comment.comment}</p>
+                      {comment.comment && (
+                        <p className="text-[10px] text-gray-700 dark:text-gray-300">{comment.comment}</p>
+                      )}
                       {/* Comment Images */}
                       {comment.images && comment.images.length > 0 && (
-                        <div className="flex gap-1 mt-0.5">
+                        <div className="flex gap-1 mt-0.5 flex-wrap">
                           {comment.images.map((imgUrl, idx) => (
                             <button
                               key={idx}
-                              onClick={() => setExpandedImage(imgUrl)}
+                              onClick={() => setExpandedCommentImage(imgUrl)}
                               className="w-12 h-12 rounded-lg overflow-hidden hover:opacity-80 transition-opacity"
                             >
                               <img
@@ -604,10 +614,32 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
                   </div>
                 )}
                 
+                {/* Selected Images Preview */}
+                {selectedImages.length > 0 && (
+                  <div className="flex gap-1 px-2 flex-wrap">
+                    {selectedImages.map((imgUrl, idx) => (
+                      <div key={idx} className="relative">
+                        <img
+                          src={imgUrl}
+                          alt={`Preview ${idx + 1}`}
+                          className="w-12 h-12 rounded-lg object-cover"
+                        />
+                        <button
+                          onClick={() => setSelectedImages((prev) => prev.filter((_, i) => i !== idx))}
+                          className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] hover:bg-red-600"
+                          title="Remove image"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
                 <div className="flex items-center gap-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600 px-2 py-1">
                   <button
                     onClick={handleAddComment}
-                    disabled={!newComment.trim()}
+                    disabled={!newComment.trim() && selectedImages.length === 0}
                     className="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Add comment"
                   >
@@ -628,14 +660,35 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
                     placeholder="Type a message..."
                     className="flex-1 px-2 py-1 text-[10px] bg-transparent text-gray-900 dark:text-white focus:outline-none"
                   />
-                  <button
-                    className="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
-                    title="Add image"
-                  >
+                  <label className="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors cursor-pointer" title="Add image (camera or gallery)">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        if (files.length > 0) {
+                          files.forEach((file) => {
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              const result = event.target?.result as string;
+                              if (result) {
+                                setSelectedImages((prev) => [...prev, result]);
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          });
+                        }
+                        // Reset input to allow selecting the same file again
+                        e.target.value = '';
+                      }}
+                    />
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                  </button>
+                  </label>
                   <button
                     className="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
                     title="Voice message"
@@ -675,6 +728,15 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
           image={expandedImage}
           isOpen={!!expandedImage}
           onClose={() => setExpandedImage(null)}
+        />
+      )}
+      
+      {/* Comment Image Modal */}
+      {expandedCommentImage && (
+        <ImageModal
+          image={expandedCommentImage}
+          isOpen={!!expandedCommentImage}
+          onClose={() => setExpandedCommentImage(null)}
         />
       )}
     </>
