@@ -68,6 +68,7 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
   const [waitTimeMax, setWaitTimeMax] = useState<number>(15); // For service venues
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [expandedCommentImage, setExpandedCommentImage] = useState<string | null>(null);
+  const [venueUserImages, setVenueUserImages] = useState<VenueImage[]>(venue?.userImages || []);
 
   useEffect(() => {
     const reviews = getReviews(venue.id);
@@ -79,6 +80,9 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
       (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
     );
     setLiveComments(sortedComments);
+    
+    // Initialize venue user images
+    setVenueUserImages(venue?.userImages || []);
     
     // Mark existing comments as not new
     setNewCommentIds(new Set());
@@ -305,6 +309,21 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
     // Add images if any
     if (selectedImages.length > 0) {
       comment.images = selectedImages;
+      
+      // Also add images to venue's userImages for Recent Photos section
+      const newVenueImages: VenueImage[] = selectedImages.map((imgUrl, idx) => ({
+        id: `img_${Date.now()}_${idx}`,
+        url: imgUrl,
+        uploadedBy: user.id,
+        uploadedAt: new Date(),
+        caption: newComment.trim() || undefined,
+      }));
+      
+      setVenueUserImages((prev) => {
+        // Add new images at the beginning (newest first) and limit to reasonable number
+        const updated = [...newVenueImages, ...prev].slice(0, 20);
+        return updated;
+      });
     }
 
     // Add comment at the top of the list
@@ -537,10 +556,10 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
         </div>
 
         {/* Recent Photos - Below Live Comments, Above Input */}
-        {venue.id === '25' && venue.userImages && venue.userImages.length > 0 && (
+        {venueUserImages && venueUserImages.length > 0 && (
           <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 pt-2 pb-1">
             <StackedImageGallery
-              images={venue.userImages}
+              images={venueUserImages}
               onImageClick={(image) => setExpandedImage(image)}
             />
           </div>
