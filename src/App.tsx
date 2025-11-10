@@ -19,6 +19,7 @@ function AppContent() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isEventsOpen, setIsEventsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Apply dark mode to document
   useEffect(() => {
@@ -54,9 +55,16 @@ function AppContent() {
     return sum / commentsWithVibe.length;
   };
 
-  // Filter venues based on category, vibe, and activity level
+  // Filter venues based on category, vibe, activity level, and search query
   const filteredVenues = useMemo(() => {
     let venues = filterVenuesByCategory(mockVenues, selectedCategory);
+    
+    // Special filter: if search query contains "craft cocktail bar", only show The Alembic
+    const queryLower = searchQuery.toLowerCase().trim();
+    if (queryLower.includes('craft cocktail bar')) {
+      venues = venues.filter((v) => v.id === '25' || v.name === 'The Alembic');
+      return venues;
+    }
     
     // Filter out venues below vibe threshold and venues with red waiting times (very-busy)
     venues = venues.filter((v) => {
@@ -92,7 +100,7 @@ function AppContent() {
     });
     
     return venues;
-  }, [selectedCategory, minVibe]);
+  }, [selectedCategory, minVibe, searchQuery]);
 
 
   const handleVenueSelect = (venue: Venue | null) => {
@@ -150,6 +158,7 @@ function AppContent() {
           venues={mockVenues}
           onVenueSelect={handleVenueSelect}
           onClear={handleClearSelection}
+          onSearchQueryChange={setSearchQuery}
           onOpenLiveEvents={() => setIsEventsOpen(true)}
           onOpenFeelingLucky={() => {
             const event = new CustomEvent('feelingLuckyOpen');

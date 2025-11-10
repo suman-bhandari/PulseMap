@@ -55,7 +55,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ image, isOpen, onClose }) => {
 };
 
 const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [aiSummary, setAiSummary] = useState<string>('');
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showReviewsList, setShowReviewsList] = useState(false);
@@ -339,6 +339,13 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
     // Add images if any
     if (selectedImages.length > 0) {
       comment.images = selectedImages;
+      
+      // Increase EXP by 1k when comment includes pictures
+      if (user) {
+        updateUser({
+          karma: (user.karma || 0) + 1000,
+        });
+      }
       
       // Also add images to venue's userImages for Recent Photos section
       const newVenueImages: VenueImage[] = selectedImages.map((imgUrl, idx) => ({

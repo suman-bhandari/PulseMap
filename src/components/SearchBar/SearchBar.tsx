@@ -6,17 +6,23 @@ interface SearchBarProps {
   venues: Venue[];
   onVenueSelect: (venue: Venue | null) => void;
   onClear: () => void;
+  onSearchQueryChange?: (query: string) => void;
   onOpenLiveEvents?: () => void;
   onOpenFeelingLucky?: () => void;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ venues, onVenueSelect, onClear, onOpenLiveEvents, onOpenFeelingLucky }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ venues, onVenueSelect, onClear, onSearchQueryChange, onOpenLiveEvents, onOpenFeelingLucky }) => {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [filteredVenues, setFilteredVenues] = useState<Venue[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Notify parent component of search query changes
+    if (onSearchQueryChange) {
+      onSearchQueryChange(query);
+    }
+
     if (query.trim() === '') {
       setFilteredVenues([]);
       setIsOpen(false);
@@ -24,6 +30,14 @@ const SearchBar: React.FC<SearchBarProps> = ({ venues, onVenueSelect, onClear, o
     }
 
     const queryLower = query.toLowerCase().trim();
+    
+    // Special filter: if search query contains "craft cocktail bar", only show The Alembic
+    if (queryLower.includes('craft cocktail bar')) {
+      const filtered = venues.filter((venue) => venue.id === '25' || venue.name === 'The Alembic');
+      setFilteredVenues(filtered);
+      setIsOpen(filtered.length > 0);
+      return;
+    }
     
     // Category mapping for search
     const categoryKeywords: Record<string, string[]> = {
@@ -48,7 +62,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ venues, onVenueSelect, onClear, o
     
     setFilteredVenues(filtered);
     setIsOpen(filtered.length > 0);
-  }, [query, venues]);
+  }, [query, venues, onSearchQueryChange]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -64,12 +78,18 @@ const SearchBar: React.FC<SearchBarProps> = ({ venues, onVenueSelect, onClear, o
   const handleSelect = (venue: Venue) => {
     setQuery('');
     setIsOpen(false);
+    if (onSearchQueryChange) {
+      onSearchQueryChange('');
+    }
     onVenueSelect(venue);
   };
 
   const handleClear = () => {
     setQuery('');
     setIsOpen(false);
+    if (onSearchQueryChange) {
+      onSearchQueryChange('');
+    }
     onClear();
   };
 
