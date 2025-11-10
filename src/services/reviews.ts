@@ -78,6 +78,11 @@ export const checkLocationVerification = (
 };
 
 export const getAISummary = (venue: Venue, reviews: Review[]): string => {
+  // If venue has a pre-set AI summary, use that
+  if (venue.aiSummary) {
+    return venue.aiSummary;
+  }
+  
   // Mock AI-generated summary based on venue data and recent reviews
   const avgRating = reviews.length > 0
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length

@@ -9,7 +9,10 @@ interface LiveEventsPanelProps {
 }
 
 const LiveEventsPanel: React.FC<LiveEventsPanelProps> = ({ isOpen, onClose, onEventSelect }) => {
-  const [events] = useState<LiveEvent[]>(mockEvents);
+  const [events] = useState<LiveEvent[]>(() => {
+    // Sort events chronologically by start time
+    return [...mockEvents].sort((a, b) => a.startTime.getTime() - b.startTime.getTime());
+  });
 
   if (!isOpen) return null;
 
@@ -29,7 +32,7 @@ const LiveEventsPanel: React.FC<LiveEventsPanelProps> = ({ isOpen, onClose, onEv
       case 'market':
         return '🛒';
       case 'sports':
-        return '⚽';
+        return '🏐';
       default:
         return '📍';
     }

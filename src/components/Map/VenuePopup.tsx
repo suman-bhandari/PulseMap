@@ -189,9 +189,9 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
     });
   }, []);
 
-  // Trigger first comment 2 seconds after venue opens (skip for Floyd's Barbershop)
+  // Trigger first comment 2 seconds after venue opens (skip for Floyd's Barbershop, Smuggler's Cove, and Bourbon & Branch)
   useEffect(() => {
-    if (!venue || venue.id === '31') return; // Skip auto-comments for Floyd's Barbershop
+    if (!venue || venue.id === '31' || venue.id === '4' || venue.id === '33') return; // Skip auto-comments for Floyd's Barbershop, Smuggler's Cove, and Bourbon & Branch
 
     const firstCommentTimer = setTimeout(() => {
       addNewComment();
@@ -200,9 +200,9 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
     return () => clearTimeout(firstCommentTimer);
   }, [venue, addNewComment]);
 
-  // Simulate real-time comment updates (subsequent comments) - skip for Floyd's Barbershop
+  // Simulate real-time comment updates (subsequent comments) - skip for Floyd's Barbershop, Smuggler's Cove, and Bourbon & Branch
   useEffect(() => {
-    if (!venue || venue.id === '31') return; // Skip auto-comments for Floyd's Barbershop
+    if (!venue || venue.id === '31' || venue.id === '4' || venue.id === '33') return; // Skip auto-comments for Floyd's Barbershop, Smuggler's Cove, and Bourbon & Branch
 
     const interval = setInterval(() => {
       // Randomly decide if a new comment should appear (30% chance)
@@ -226,9 +226,24 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
 
   // Calculate aggregated vibe from live comments (0-5 scale)
   const aggregatedVibe = useMemo(() => {
-    if (!isEntertainmentVenue || !liveComments || liveComments.length === 0) return undefined;
+    if (!isEntertainmentVenue) return undefined;
+    
+    // If venue has a direct vibe property set, use that (prioritize over comments)
+    if (venue.vibe !== undefined) {
+      return venue.vibe > 5 ? (venue.vibe - 1) / 2 : venue.vibe;
+    }
+    
+    // If no comments, return undefined
+    if (!liveComments || liveComments.length === 0) {
+      return undefined;
+    }
+    
+    // Calculate from live comments
     const commentsWithVibe = liveComments.filter(c => c.vibe !== undefined);
-    if (commentsWithVibe.length === 0) return undefined;
+    if (commentsWithVibe.length === 0) {
+      return undefined;
+    }
+    
     // Convert old 1-10 scale to 0-5 scale if needed, then calculate average
     const sum = commentsWithVibe.reduce((acc, c) => {
       const vibe = c.vibe || 0;
@@ -238,7 +253,7 @@ const VenuePopup: React.FC<VenuePopupProps> = ({ venue, onViewDetails }) => {
     }, 0);
     const avg = sum / commentsWithVibe.length;
     return avg; // Return actual average (not rounded)
-  }, [liveComments, isEntertainmentVenue]);
+  }, [liveComments, isEntertainmentVenue, venue.vibe, venue]);
 
   // Get rounded vibe for display (nearest 0.5)
   const roundedVibe = useMemo(() => {

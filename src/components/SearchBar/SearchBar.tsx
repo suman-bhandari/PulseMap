@@ -80,10 +80,11 @@ const SearchBar: React.FC<SearchBarProps> = ({ venues, onVenueSelect, onClear, o
         {onOpenLiveEvents && (
           <button
             onClick={onOpenLiveEvents}
-            className="px-3 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all font-medium shadow-lg flex items-center justify-center whitespace-nowrap"
+            className="px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all font-medium shadow-lg flex items-center justify-center gap-2 whitespace-nowrap"
             title="Live Events"
           >
-            <span className="text-sm">🎉</span>
+            <span className="text-base">🎉</span>
+            <span className="text-sm font-semibold">Live Events</span>
           </button>
         )}
 
