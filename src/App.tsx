@@ -58,13 +58,10 @@ function AppContent() {
   const filteredVenues = useMemo(() => {
     let venues = filterVenuesByCategory(mockVenues, selectedCategory);
     
-    // Determine minimum vibe threshold (use minVibe if set, otherwise default to 3.5)
-    const minVibeThreshold = minVibe > 0 ? minVibe : 3.5;
-    
     // Filter out venues below vibe threshold and venues with red waiting times (very-busy)
     venues = venues.filter((v) => {
-      // Always include Celeste (special venue)
-      if (v.id === '32' || v.name === 'Celeste') {
+      // Always include Li Po Cocktail Lounge (special venue)
+      if (v.id === '32' || v.name === 'Li Po Cocktail Lounge') {
         return true;
       }
       
@@ -73,18 +70,21 @@ function AppContent() {
         return false;
       }
       
-      // For entertainment venues (bar, club), filter by vibe
+      // For entertainment venues (bar, club), filter by vibe only if minVibe is set (> 0)
       if (v.category === 'bar' || v.category === 'club') {
         const calculatedVibe = getVenueVibe(v);
         
-        // If we have a vibe value and it's below threshold, filter it out
-        if (calculatedVibe !== undefined && calculatedVibe < minVibeThreshold) {
-          return false;
-        }
-        
-        // If no vibe data available for entertainment venue, exclude it (to be safe)
-        if (calculatedVibe === undefined) {
-          return false;
+        // Only filter by vibe if minVibe is explicitly set (> 0)
+        if (minVibe > 0) {
+          // If we have a vibe value and it's below threshold, filter it out
+          if (calculatedVibe !== undefined && calculatedVibe < minVibe) {
+            return false;
+          }
+          
+          // If no vibe data available for entertainment venue, exclude it (to be safe)
+          if (calculatedVibe === undefined) {
+            return false;
+          }
         }
       }
       

@@ -82,6 +82,50 @@ npm start
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## Deployment to GitHub Pages
+
+This project is configured for automatic deployment to GitHub Pages using GitHub Actions.
+
+### Initial Setup
+
+1. **Update the homepage URL** in `package.json`:
+   - Replace `YOUR_USERNAME` with your GitHub username
+   - If your repository name is different from `venue-tracker`, update that as well
+   - Example: `"homepage": "https://suman.github.io/venue-tracker"`
+
+2. **Enable GitHub Pages** in your repository settings:
+   - Go to your repository on GitHub
+   - Navigate to **Settings** → **Pages**
+   - Under **Source**, select **GitHub Actions**
+   - Save the settings
+
+3. **Push your code to GitHub**:
+   ```bash
+   git add .
+   git commit -m "Configure GitHub Pages deployment"
+   git push origin main
+   ```
+
+### Automatic Deployment
+
+Once configured, the app will automatically deploy to GitHub Pages whenever you push to the `main` branch. The GitHub Actions workflow will:
+- Build the React app
+- Deploy it to the `gh-pages` branch
+- Make it available at `https://YOUR_USERNAME.github.io/venue-tracker`
+
+### Manual Deployment
+
+You can also deploy manually using:
+```bash
+npm run deploy
+```
+
+This will build the app and push it to the `gh-pages` branch.
+
+### Routing Support
+
+The app includes support for client-side routing on GitHub Pages using a custom 404.html redirect. This ensures that direct links to routes work correctly.
+
 ## Project Structure
 
 ```

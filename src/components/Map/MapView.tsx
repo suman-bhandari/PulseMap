@@ -93,8 +93,8 @@ const MapView: React.FC<MapViewProps> = ({ venues, selectedVenue, onVenueSelect 
 
   // Create custom marker icons based on vibe
   const createCustomIcon = (venue: Venue) => {
-    // Special marker for Celeste - fire with shiny background
-    if (venue.id === '32' || venue.name === 'Celeste') {
+    // Special marker for Li Po Cocktail Lounge - fire with shiny background
+    if (venue.id === '32' || venue.name === 'Li Po Cocktail Lounge') {
       return L.divIcon({
         className: 'custom-marker',
         html: `
